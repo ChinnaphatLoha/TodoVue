@@ -1,18 +1,19 @@
 <script setup>
-import { collection, getDocs } from 'firebase/firestore';
-import { ref, onMounted } from 'vue';
+import { query, collection, getDocs, Timestamp } from 'firebase/firestore';
+import { ref, onMounted, } from 'vue';
 import db from '@/firebase/init.js';
 
 /**
- * @type {{ id: string, title: string, completed: boolean, timestamp: string }[]}
+ * @type { import('vue').Ref<{ id: string, title: string, completed: boolean, createdAt: Timestamp }[]> }
  */
 const todos = ref([]);
 
 async function getToDos() {
 	const coll = collection(db, 'todos');
-	const querySnapshot = await getDocs(coll);
+	const querySnapshot = await getDocs(query(coll));
 	querySnapshot.forEach((doc) => {
-		todos.value.push(doc.data());
+		const id = doc.id;
+		todos.value.push({ id, ...doc.data() });
 	});
 }
 
@@ -23,7 +24,10 @@ onMounted(() => {
 
 <template>
 	<ul>
-		<li v-for="todo in todos" :key="todo.title">
+		<li
+			v-for="todo in todos"
+			:key="todo.title"
+		>
 			{{ todo.title }}
 		</li>
 	</ul>
